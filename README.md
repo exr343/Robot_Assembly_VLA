@@ -1,6 +1,6 @@
-# Fine-tuned OpenVLA-oft Model for Robotic Assembly Tasks
+# Fine-tuned OpenVLA-OFT Model for Robotic Assembly Tasks
 
-This repository contains code and configurations for fine-tuning the OpenVLA-oft model on engine-block based assembly tasks and subsequently evaluating the fine-tuned VLA model. 
+This repository contains code and configurations for fine-tuning the OpenVLA-OFT model on engine-block based assembly tasks and subsequently evaluating the fine-tuned VLA model. 
 
 Fine-tuning and evaluation was performed using Case Western Reserve University's High Performance Computing (HPC) cluster.
 
@@ -9,7 +9,7 @@ Specs for fine-tuning:
   - Resources per job: 1 GPU, 2 CPU cores, 200 GB RAM
   - Module stack: `module load Miniconda3/23.10.0-1`
 
-The slurm batch file submitted to the HPC cluster is seen in openvla-oft/run_openvla_oft_assembly_wandb.sh.
+The slurm batch file submitted to the HPC cluster is seen in run_openvla_oft_assembly_wandb.sh.
 
 ## 1. Configure Environment
 ### Set-up Conda Environment
@@ -35,10 +35,10 @@ ninja --version; echo $?  # Verify Ninja --> should return exit code "0"
 pip install "flash-attn==2.5.5" --no-build-isolation # not essential
 ```
 
-## 2. Fine-tune Base OpenVLA-oft Model
+## 2. Fine-tune Base OpenVLA-OFT Model
 
 The finetune.py script is run on a TensorFlow-based RLDS dataset formed from rlds_dataset_builder-main/assembly_robot_data.
-It is noted that that action chunking is defined within openvla-oft/prismatic/vla/constants.py. The following code snippet is used to fine-tune the base model.
+It is noted that that action chunking is defined within prismatic/vla/constants.py. The following code snippet is used to fine-tune the base model.
 
 ```bash
 torchrun --standalone --nnodes 1 --nproc-per-node 1 vla-scripts/finetune.py \
