@@ -9,11 +9,11 @@ Specs for fine-tuning:
   - Resources per job: 1 GPU, 2 CPU cores, 200 GB RAM
   - Module stack: `module load Miniconda3/23.10.0-1`
 
-Submitted slurm batch file seen in openvla-oft/run_openvla_oft_assembly_wandb.sh 
+The slurm batch file submitted to the HPC cluster is seen in openvla-oft/run_openvla_oft_assembly_wandb.sh.
 
 ## 1. Configure Environment
 ### Set-up Conda Environment
-it is 
+The following commands create a conda environment and install this project and its dependencies as specified in pyproject.toml.
 ```bash
 # Create and activate conda environment
 conda create -n openvla-oft python=3.10 -y
@@ -25,7 +25,7 @@ pip3 install torch torchvision torchaudio
 
 # Clone openvla-oft repo and pip install to download dependencies
 git clone https://github.com/exr343/Robot_Assembly_VLA.git
-cd openvla-oft
+cd Robot_Assembly_VLA
 pip install -e . 
 
 # Install Flash Attention 2 for training (https://github.com/Dao-AILab/flash-attention)
@@ -37,15 +37,15 @@ pip install "flash-attn==2.5.5" --no-build-isolation # not essential
 
 ## 2. Fine-tune Base OpenVLA-oft Model
 
-The finetune.py script is ran on a tensforflow-based RLDS dataset formed from rlds_dataset_builder-main/assembly_robot_data.
-It is noted that that action chunking is defined within openvla-oft/prismatic/vla/constants.py.
+The finetune.py script is run on a TensorFlow-based RLDS dataset formed from rlds_dataset_builder-main/assembly_robot_data.
+It is noted that that action chunking is defined within openvla-oft/prismatic/vla/constants.py. The following code snippet is used to fine-tune the base model.
 
 ```bash
 torchrun --standalone --nnodes 1 --nproc-per-node 1 vla-scripts/finetune.py \
   --vla_path "openvla/openvla-7b" \ 
   --data_root_dir "/PATH/TO/RLDS/DATASETS/DIR/" \
   --dataset_name "assembly_robot_data" \
-  --run_root_dir "/openvla-oft/checkpoints/openvla_assembly_robot" \
+  --run_root_dir "/PATH/TO/CHECKPOINT" \
   --use_l1_regression True \
   --use_diffusion False \
   --use_film True \
@@ -67,11 +67,15 @@ torchrun --standalone --nnodes 1 --nproc-per-node 1 vla-scripts/finetune.py \
 ```
 
 ## 3. Use Fine-tuned Model
-Input: joint angles (dim 7), gripper state (dim 1), language instruction, side image (480, 640, 3), wrist image (480, 640, 3)
-Output: (x8 chunks) joint control (dim 7), gripper state (dim 1)
-Model evaluation script:
 
-```bash
+The fine-tuned model forms a policy based on the following inputs and outputs:
+
+- **Input:** joint angles (dim 7), gripper state (dim 1), language instruction, side image (480, 640, 3), wrist image (480, 640, 3)  
+- **Output:** 8-step action chunk: joint control (dim 7), gripper state (dim 1)
+
+To evaluate the model, the following Python script may be used:
+
+```python
 import os
 import numpy as np
 from PIL import Image
