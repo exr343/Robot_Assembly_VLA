@@ -845,6 +845,27 @@ def aloha_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
     # Don't need to do anything because dataset is already in the correct format
     return trajectory
 
+def assembly_robot_data_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Standardization for 'assembly_robot_dataset'.
+
+    Assumes:
+        - trajectory["observation"]["image_0"]: side RGB
+        - trajectory["observation"]["image_1"]: wrist RGB
+        - trajectory["observation"]["state"]: joint positions + gripper state
+        - trajectory["action"]: joint command + gripper command
+
+    Both state and action are already in JOINT / JOINT_POS form.
+    """
+    # If state has extra components (e.g., velocities), keep first 8 entries:
+    traj_state = trajectory["observation"]["state"]
+    trajectory["observation"]["state"] = traj_state[..., :8]
+
+    # Likewise, ensure action is joints + gripper (8 dims); truncate if longer:
+    traj_action = trajectory["action"]
+    trajectory["action"] = traj_action[..., :8]
+    return trajectory
+
 
 # === Registry ===
 OXE_STANDARDIZATION_TRANSFORMS = {
@@ -930,4 +951,5 @@ OXE_STANDARDIZATION_TRANSFORMS = {
     "aloha1_fold_shirt_30_demos": aloha_dataset_transform,
     "aloha1_scoop_X_into_bowl_45_demos": aloha_dataset_transform,
     "aloha1_put_X_into_pot_300_demos": aloha_dataset_transform,
+    "assembly_robot_data": assembly_robot_data_transform,
 }
