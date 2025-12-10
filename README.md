@@ -37,8 +37,8 @@ pip install "flash-attn==2.5.5" --no-build-isolation # not essential
 
 ## 2. Fine-tune Base OpenVLA-OFT Model
 
-The finetune.py script is run on a TensorFlow-based RLDS dataset formed from rlds_dataset_builder-main/assembly_robot_data.
-It is noted that that action chunking is defined within prismatic/vla/constants.py. The following code snippet is used to fine-tune the base model.
+The finetune.py script is run on a TensorFlow-based RLDS dataset formed from rlds_dataset_builder-main/assembly_robot_data. In particular, 86 demonstrations were recorded of a UR5 robot placing a valve cover assembly onto an engine cylinder head. Each demonstration consists of a variable number of timesteps. For each timestep, joint and gripper angles are recorded as the robot state, side image and wrist images are recorded as the observation, and joint and gripper control values are recorded as the action.
+It is noted that that action chunking is defined within prismatic/vla/constants.py, which is set to 5 in this model. The following code snippet is used to fine-tune the base model.
 
 ```bash
 torchrun --standalone --nnodes 1 --nproc-per-node 1 vla-scripts/finetune.py \
@@ -68,7 +68,7 @@ torchrun --standalone --nnodes 1 --nproc-per-node 1 vla-scripts/finetune.py \
 
 ## 3. Use Fine-tuned Model
 
-The fine-tuned model forms a policy based on the following inputs and outputs:
+The fine-tuned OpenVLA-OFT model forms a policy based on the following inputs and outputs:
 
 - **Input:** joint angles (dim 6), gripper state (dim 1), language instruction, side image (480, 640, 3), wrist image (480, 640, 3)  
 - **Output:** 5-step action chunk: joint control (dim 6), gripper state (dim 1)
@@ -89,10 +89,10 @@ from experiments.robot.openvla_utils import (
 )
 from prismatic.vla.constants import NUM_ACTIONS_CHUNK, PROPRIO_DIM
 
-CHECKPOINT = "/openvla-oft/checkpoints/openvla_assembly_robot/openvla-7b+assembly_robot_data+b1+lr-0.0005+lora-r32+dropout-0.0--image_aug--assembly_robot_jointpos_wrist_side_film_l1" # included checkpoint based on finetuning script above
-IMG_PATH_SIDE = "/PATH/TO/side_image.png" # (480, 640, 3)
-IMG_PATH_WRIST = "/PATH/TO/wrist_image.png" # (480, 640, 3)
-STATE_PATH = "/PATH/TO/states.npy" # (7,)
+CHECKPOINT = "/PATH/TO/CHECKPOINT" # included checkpoint based on finetuning script above
+IMG_PATH_SIDE = "/PATH/TO/side_image.png" # (480, 640, 3) PNG file
+IMG_PATH_WRIST = "/PATH/TO/wrist_image.png" # (480, 640, 3) PNG file
+STATE_PATH = "/PATH/TO/states.npy" # (7,) NumPy array
 INSTRUCTION = "put the valve cover assembly onto the cylinder head" # text string
 
 cfg = GenerateConfig(
