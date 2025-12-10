@@ -38,6 +38,7 @@ pip install "flash-attn==2.5.5" --no-build-isolation # not essential
 ## 2. Fine-tune Base OpenVLA-OFT Model
 
 The finetune.py script is run on a TensorFlow-based RLDS dataset formed from rlds_dataset_builder-main/assembly_robot_data. In particular, 86 demonstrations were recorded of a UR5 robot placing a valve cover assembly onto an engine cylinder head. Each demonstration consists of a variable number of timesteps. For each timestep, joint and gripper angles are recorded as the robot state, side image and wrist images are recorded as the observation, and joint and gripper control values are recorded as the action.
+
 It is noted that that action chunking is defined within prismatic/vla/constants.py, which is set to 5 in this model. The following code snippet is used to fine-tune the base model.
 
 ```bash
