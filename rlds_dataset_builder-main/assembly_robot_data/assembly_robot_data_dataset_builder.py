@@ -47,7 +47,7 @@ class AssemblyRobotData(tfds.core.GeneratorBasedBuilder):
                                     "state": tfds.features.Tensor(
                                         shape=(7,),
                                         dtype=np.float32,
-                                        doc="Robot state: 8-D vector (joint + gripper state).",
+                                        doc="Robot state: 7-D vector (joint + gripper state).",
                                     ),
                                 }
                             ),
@@ -111,26 +111,33 @@ class AssemblyRobotData(tfds.core.GeneratorBasedBuilder):
         )
 
     def _split_generators(self, dl_manager):
-        """Split generators."""
+        """Define train/val splits."""
         rlds_dir = "/scratch/pioneer/users/exr343/kth_incoming/rlds_ds_7dim"
+
+        episode_paths = sorted(glob.glob(os.path.join(rlds_dir, "*.pkl")))
+        n = len(episode_paths)
+
+        val_frac = 0.1  # 10% validation
+        n_val = max(1, int(n * val_frac))
+
+        train_paths = episode_paths[:-n_val]
+        val_paths   = episode_paths[-n_val:]
+
         return {
-            "train": self._generate_examples(rlds_dir),
+            "train": self._generate_examples(train_paths),
+            "val":   self._generate_examples(val_paths),
         }
 
-    def _generate_examples(
-        self, rlds_dir: str
-    ) -> Iterator[Tuple[str, Any]]:
-        """Generator of examples (train split only)."""
+    def _generate_examples(self, episode_paths) -> Iterator[Tuple[str, Any]]:
+        """Generator of examples for a given split (train or val)."""
 
         def _parse_example(episode_path: str):
-            # 1) load RLDS episode dict from .pkl
             with open(episode_path, "rb") as f:
                 episode = pickle.load(f)
 
             meta = episode["episode_metadata"]
             data = episode["steps"]  # list of step dicts
 
-            # 2) assemble steps in the format _info() expects
             episode_steps = []
             n = len(data)
             for i, step in enumerate(data):
@@ -142,9 +149,9 @@ class AssemblyRobotData(tfds.core.GeneratorBasedBuilder):
                 episode_steps.append(
                     {
                         "observation": {
-                            "image": obs["image_0"],        # side camera
-                            "wrist_image": obs["image_1"],  # wrist camera
-                            "state": obs["state"],
+                            "image":       obs["image_0"],   # side camera
+                            "wrist_image": obs["image_1"],   # wrist camera
+                            "state":       obs["state"],
                         },
                         "action": step["action"],
                         "discount": 1.0,
@@ -153,24 +160,23 @@ class AssemblyRobotData(tfds.core.GeneratorBasedBuilder):
                         "is_last": (i == (n - 1)),
                         "is_terminal": (i == (n - 1)),
                         "language_instruction": lang,
-                        "language_embedding": language_embedding,
+                        "language_embedding":   language_embedding,
                     }
                 )
 
             sample = {
                 "steps": episode_steps,
                 "episode_metadata": {
-                    "file_path": episode_path,
-                    "episode_id": meta["episode_id"],
-                    "instruction": meta["instruction"],
-                    "num_steps": meta["num_steps"],
+                    "file_path":        episode_path,
+                    "episode_id":       meta["episode_id"],
+                    "instruction":      meta["instruction"],
+                    "num_steps":        meta["num_steps"],
                     "source_directory": meta["source_directory"],
                 },
             }
 
             return episode_path, sample
 
-        episode_paths = glob.glob(os.path.join(rlds_dir, "*.pkl"))
         for episode_path in episode_paths:
             print("Processing", episode_path, flush=True)
             key, sample = _parse_example(episode_path)

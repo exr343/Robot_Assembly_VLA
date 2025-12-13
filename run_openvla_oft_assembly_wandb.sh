@@ -30,13 +30,13 @@ torchrun --standalone --nnodes 1 --nproc-per-node 1 vla-scripts/finetune.py \
   --use_film True \
   --num_images_in_input 2 \
   --use_proprio True \
-  --batch_size 4 \
+  --batch_size 8 \
   --learning_rate 5e-4 \
-  --num_steps_before_decay 25000 \
+  --num_steps_before_decay 50000 \
   --max_steps 100005 \
-  --use_val_set False \
-  --val_freq 10000 \
-  --save_freq 5000 \
+  --use_val_set True \
+  --val_freq 5000 \
+  --save_freq 50000 \
   --save_latest_checkpoint_only True \
   --image_aug True \
   --lora_rank 48 \

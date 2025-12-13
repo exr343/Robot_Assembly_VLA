@@ -70,7 +70,7 @@ torchrun --standalone --nnodes 1 --nproc-per-node 1 vla-scripts/finetune.py \
 
 ```
 Training loss over the training steps is seen in the figure below:
-![Training L1 Loss](images/train_loss_fig.png)
+![Training L1 Loss](images/training_loss_fig.png)
 And likewise, the validation loss is seen in the following figure:
 ![Validation L1 Loss](images/val_loss_fig.png)
 

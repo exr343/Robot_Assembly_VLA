@@ -723,7 +723,7 @@ OXE_DATASET_CONFIGS = {
         "state_encoding":  StateEncoding.JOINT,
         "action_encoding": ActionEncoding.JOINT_POS,
 
-        "absolute_action_mask":      [False, False, False, False, False, False, False],
-        "action_normalization_mask": [True,  True,  True,  True,  True,  True,  True],
+        "absolute_action_mask":      [False, False, False, False, False, False, True],
+        "action_normalization_mask": [True,  True,  True,  True,  True,  True,  False],
     },
 }

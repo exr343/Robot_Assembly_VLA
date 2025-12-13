@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J tfds_assembly_robot
 #SBATCH -p gpu
-#SBATCH -C gpu4090
+#SBATCH -C gpu2h100
 #SBATCH --gres=gpu:1
 #SBATCH -N 1
 #SBATCH -c 4
