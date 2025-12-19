@@ -129,14 +129,14 @@ class AsyncGripperController:
         except Exception:
             pass
 
-CHECKPOINT = "VLA_Front_Side_Wrist_ValveCover" # included checkpoint based on finetuning script above
-INSTRUCTION = "put the valve cover assembly onto the cylinder head" # text string
+CHECKPOINT = "VLA_Side_Side_Wrist_Cube" # included checkpoint based on finetuning script above
+INSTRUCTION = "put the white cube into thered box" # text string
 UR5_IP = os.environ.get("UR5_IP", "192.168.1.60")
 # Default RealSense serials: side=D405, wrist=D435; override with env RS_SERIAL_SIDE / RS_SERIAL_WRIST
 RS_SERIAL_SIDE = "218622277783"
 RS_SERIAL_WRIST = "819612070593"
 # Front D435if camera (defaults to provided serial, override via RS_SERIAL_FRONT or legacy RS_SERIAL_WRIST2 env)
-RS_SERIAL_FRONT = "327122075831"
+RS_SERIAL_FRONT = "230322273810"
 # Default UR5 "home" joint configuration (degrees converted to radians); override via --home_joints or env UR5_HOME_JOINTS
 # Target initial pose (radians) before running the model
 DEFAULT_HOME_JOINTS = [
@@ -352,23 +352,22 @@ if __name__ == "__main__":
             for a in actions:
                 print(a)
 
-            if rtde_c is not None and gripper is not None:
+            if rtde_c is not None and gripper is not None and len(actions) > 0:
+                # 只用每个 action chunk 的最后一个动作驱动机器人
+                action = actions[-1]
                 current_joints = rtde_r.getActualQ()
-                for step_id, action in enumerate(actions):
-                    joint_cmd = np.asarray(action[:6], dtype=np.float64)
-                    if args.use_relative:
-                        joint_cmd = np.asarray(current_joints[:6], dtype=np.float64) + joint_cmd
-                    # moveJ supports asynchronous execution via the `asynchronous` flag (cannot use reserved keyword `async`)
-                    rtde_c.moveJ(
-                        joint_cmd.tolist(),
-                        speed=float(os.environ.get("UR5_JOINT_SPEED", "0.3")),
-                        acceleration=float(os.environ.get("UR5_JOINT_ACC", "0.3")),
-                        asynchronous=True,
-                    )
-                    # 将模型输出的抓手值直接传给机械爪（映射至0..255位置指令）
-                    gripper_cmd = float(action[-1])
-                    gripper.control_gripper_position(gripper_cmd, force=100, speed=30)
-                    current_joints = rtde_r.getActualQ()
+                joint_cmd = np.asarray(action[:6], dtype=np.float64)
+                if args.use_relative:
+                    joint_cmd = np.asarray(current_joints[:6], dtype=np.float64) + joint_cmd
+                rtde_c.moveJ(
+                    joint_cmd.tolist(),
+                    speed=float(os.environ.get("UR5_JOINT_SPEED", "0.3")),
+                    acceleration=float(os.environ.get("UR5_JOINT_ACC", "0.3")),
+                    asynchronous=True,
+                )
+                # 将模型输出的抓手值直接传给机械爪（映射至0..255位置指令）
+                gripper_cmd = float(action[-1])
+                gripper.control_gripper_position(gripper_cmd, force=100, speed=30)
 
             loop_idx += 1
             time.sleep(args.loop_sleep)
