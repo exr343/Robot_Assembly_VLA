@@ -152,3 +152,4 @@ data/
 rollouts/
 wandb/
 checkpoints/
+VLA_Front_Side_Wrist_ValveCover/
