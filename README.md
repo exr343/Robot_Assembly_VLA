@@ -69,17 +69,15 @@ torchrun --standalone --nnodes 1 --nproc-per-node 1 vla-scripts/finetune.py \
   --run_id_note "MODEL_NAME"
 
 ```
-Training loss over the training steps is seen in the figure below:
+Training and validation loss over the training steps are seen in the figure below:
 ![Training L1 Loss](images/training_loss_fig.png)
-And likewise, the validation loss is seen in the following figure:
-![Validation L1 Loss](images/val_loss_fig.png)
 
 ## 3. Use Fine-tuned Model
 
 The fine-tuned OpenVLA-OFT model forms a policy based on the following inputs and outputs:
 
 - **Input:** EEF angles [x, y, z, rx, ry, rz] (dim 6), gripper state (dim 1), language instruction, side image (480, 640, 3), wrist image (480, 640, 3)  
-- **Output:** 5-step action chunk: joint control [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6] (dim 6), gripper state (dim 1)
+- **Output:** 8-step action chunk: joint control [\theta_1, \theta_2, \theta_3, \theta_4, \theta_5, \theta_6] (dim 6), gripper state (dim 1)
 
 To evaluate the model, the following Python script may be used:
 
@@ -97,13 +95,13 @@ from experiments.robot.openvla_utils import (
 )
 from prismatic.vla.constants import NUM_ACTIONS_CHUNK, PROPRIO_DIM
 
-CHECKPOINT = "/home/exr343/checkpoints/openvla_assembly_robot/VLA_Front_Side_Wrist_ValveCover"
-IMG_PATH_FRONT = "/home/exr343/CIRP_Project/example_demos/Example/front_00000.png" 
-IMG_PATH_SIDE = "/home/exr343/CIRP_Project/example_demos/Example/side_00000.png" 
-IMG_PATH_WRIST = "/home/exr343/CIRP_Project/example_demos/Example/wrist_00000.png" 
-STATE_PATH = "/home/exr343/CIRP_Project/example_demos/Example/states.npy" 
-ACT_PATH = "/home/exr343/CIRP_Project/example_demos/Example/actions.npy" 
-INSTRUCTION = "put the valve cover assembly onto the cylinder head" 
+CHECKPOINT = "/home/exr343/checkpoints/openvla_assembly_robot/VLA_Side_Side_Wrist_Cube"
+IMG_PATH_FRONT = "/home/exr343/CIRP_Project/example_demos/Example/front_00000.png"
+IMG_PATH_SIDE = "/home/exr343/CIRP_Project/example_demos/Example/side_00000.png"
+IMG_PATH_WRIST = "/home/exr343/CIRP_Project/example_demos/Example/wrist_00000.png"
+STATE_PATH = "/home/exr343/CIRP_Project/example_demos/Example/states.npy"
+ACT_PATH = "/home/exr343/CIRP_Project/example_demos/Example/actions.npy"
+INSTRUCTION = "place the cube into the fixture"
 
 cfg = GenerateConfig(
     pretrained_checkpoint=CHECKPOINT,
@@ -152,4 +150,7 @@ if __name__ == "__main__":
     )
     print("Generated action chunk:")
     for a in actions:
+        a = np.asarray(a, dtype=np.float32).copy()
+        a[-1] = np.clip(a[-1], 0.0, 1.0)
         print(a)
+

@@ -118,7 +118,7 @@ class AssemblyRobotData(tfds.core.GeneratorBasedBuilder):
 
     def _split_generators(self, dl_manager):
         """Define train/val splits."""
-        rlds_dir = "/scratch/pioneer/users/exr343/RLDS_step_2side"
+        rlds_dir = "/scratch/pioneer/users/exr343/RLDS_2side_cleaned"
 
         episode_paths = sorted(glob.glob(os.path.join(rlds_dir, "*.pkl")))
         n = len(episode_paths)

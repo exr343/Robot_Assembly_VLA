@@ -14,7 +14,7 @@ module load Miniconda3/23.10.0-1
 source activate /home/exr343/.conda/envs/rlds_env
 
 # Where TFDS will write the built dataset
-export TFDS_DATA_DIR=/home/exr343/datasets/TFDS
+export TFDS_DATA_DIR=/home/exr343/datasets/TFDS_2side_cleaned
 
 # Go to the dataset directory (where assembly_robot_data_dataset_builder.py lives)
 cd /home/exr343/CIRP_Project/openvla-oft/rlds_dataset_builder-main/assembly_robot_data
